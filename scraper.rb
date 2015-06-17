@@ -70,15 +70,15 @@ a.get("http://www.ccc.tas.gov.au/page.aspx?u=1581") do |page|
       # Skip over links that we don't know how to handle (e.g. Notice under Historic Cultural Heritage Act 1995)
       if s.count >= 5
         record = {
-          'council_reference' => s[0..2].join('-').strip,
-          'address' => s[3].strip + ", TAS",
-          'description' => s[4..-2].join('-').strip,
+          'council_reference' => s[0..1].join('-').strip,
+          'address' => s[2].strip + ", TAS",
+          'description' => s[3..-2].join('-').strip,
           'on_notice_to' => Date.parse(s[-1].split(' ')[-3..-1].join(' ')).to_s,
           'date_scraped' => Date.today.to_s,
           'info_url' => ("http://www.ccc.tas.gov.au/" + url).gsub(" ", "%20"),
           'comment_url' => 'mailto:clarence@ccc.tas.gov.au'
         }
-        puts record
+        puts 'ref', record
         if (ScraperWiki.select("* from data where `council_reference`='#{record['council_reference']}'").empty? rescue true) 
           ScraperWiki.save_sqlite(['council_reference'], record)
         else
