@@ -2,6 +2,7 @@ require 'scraperwiki'
 require 'open-uri'
 require "pdf-reader"
 require 'mechanize'
+require 'pry'
 
 class PageTextReceiver
   attr_accessor :content
@@ -62,15 +63,8 @@ def scrape_pdf(url)
 end
 
 a = Mechanize.new
-#a.get("http://www.ccc.tas.gov.au/site/page.cfm?u=1581") do |page|
-#  page.search('.uContentList a').map{|a| a["href"]}.uniq.each do |a|
-#    record = scrape_pdf(a)
-#    ScraperWiki.save_sqlite(['council_reference'], record) if record
-#  end
-#end
-
 a.get("http://www.ccc.tas.gov.au/page.aspx?u=1581") do |page|
-  page.search('.u6ListItem a').each do |a|
+  page.search('.uContentList a').each do |a|
     unless a.at('img')
       url = a['href']
       s = a.inner_text.split('-')
@@ -85,7 +79,8 @@ a.get("http://www.ccc.tas.gov.au/page.aspx?u=1581") do |page|
           'info_url' => ("http://www.ccc.tas.gov.au/" + url).gsub(" ", "%20"),
           'comment_url' => 'mailto:clarence@ccc.tas.gov.au'
         }
-        if ScraperWiki.select("* from data where `council_reference`='#{record['council_reference']}'").empty? 
+        puts record
+        if (ScraperWiki.select("* from data where `council_reference`='#{record['council_reference']}'").empty? rescue true) 
           ScraperWiki.save_sqlite(['council_reference'], record)
         else
           puts "Skipping already saved record " + record['council_reference']
