@@ -62,30 +62,23 @@ def scrape_pdf(url)
 end
 
 a = Mechanize.new
-#a.get("http://www.ccc.tas.gov.au/site/page.cfm?u=1581") do |page|
-#  page.search('.uContentList a').map{|a| a["href"]}.uniq.each do |a|
-#    record = scrape_pdf(a)
-#    ScraperWiki.save_sqlite(['council_reference'], record) if record
-#  end
-#end
-
 a.get("http://www.ccc.tas.gov.au/page.aspx?u=1581") do |page|
-  page.search('.u6ListItem a').each do |a|
+  page.search('.uContentList a').each do |a|
     unless a.at('img')
       url = a['href']
       s = a.inner_text.split('-')
       # Skip over links that we don't know how to handle (e.g. Notice under Historic Cultural Heritage Act 1995)
       if s.count >= 5
         record = {
-          'council_reference' => s[0..2].join('-').strip,
-          'address' => s[3].strip + ", TAS",
-          'description' => s[4..-2].join('-').strip,
+          'council_reference' => s[0..1].join('-').strip,
+          'address' => s[2].strip + ", TAS",
+          'description' => s[3..-2].join('-').strip,
           'on_notice_to' => Date.parse(s[-1].split(' ')[-3..-1].join(' ')).to_s,
           'date_scraped' => Date.today.to_s,
           'info_url' => ("http://www.ccc.tas.gov.au/" + url).gsub(" ", "%20"),
           'comment_url' => 'mailto:clarence@ccc.tas.gov.au'
         }
-        if ScraperWiki.select("* from data where `council_reference`='#{record['council_reference']}'").empty? 
+        if (ScraperWiki.select("* from data where `council_reference`='#{record['council_reference']}'").empty? rescue true) 
           ScraperWiki.save_sqlite(['council_reference'], record)
         else
           puts "Skipping already saved record " + record['council_reference']
