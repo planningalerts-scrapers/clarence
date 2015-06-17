@@ -2,7 +2,6 @@ require 'scraperwiki'
 require 'open-uri'
 require "pdf-reader"
 require 'mechanize'
-require 'pry'
 
 class PageTextReceiver
   attr_accessor :content
