@@ -91,7 +91,8 @@ a = Mechanize.new
 # Why do this? It's futile. It's extremely bad for accessibility
 # It's using https://sucuri.net/ which is owned by GoDaddy. So, basically super dodgy.
 
-a.get("https://www.ccc.tas.gov.au/planning-development/planning/advertised-planning-permit-applications/") do |page|
+url = "https://www.ccc.tas.gov.au/planning-development/planning/advertised-planning-permit-applications/"
+a.get(url) do |page|
   script = page.at("script").inner_text
   s = script.match(%r{S='([^']*)';})[1]
   raise "Unexpected form of script" unless script == "var s={},u,c,U,r,i,l=0,a,e=eval,w=String.fromCharCode,sucuri_cloudproxy_js='',S='#{s}';L=S.length;U=0;r='';var A='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';for(u=0;u<64;u++){s[A.charAt(u)]=u;}for(i=0;i<L;i++){c=s[S.charAt(i)];U=(U<<6)+c;l+=6;while(l>=8){((a=(U>>>(l-=8))&0xff)||(i<(L-2)))&&(r+=w(a));}}e(r);"
@@ -104,8 +105,9 @@ a.get("https://www.ccc.tas.gov.au/planning-development/planning/advertised-plann
   d_expr = d_expr.gsub(" s ", " '#{s}' ")
   d = evaluate_expression(d_expr)
   # The final cookie
-  p d
-  exit
+  cookie = Mechanize::Cookie.parse(URI("https://www.ccc.tas.gov.au"), d)[0]
+  a.cookie_jar << cookie
+  page = a.get(url)
 
   page.search('.doc-list a').each do |a|
     unless a.at('img')
