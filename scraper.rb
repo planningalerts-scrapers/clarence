@@ -75,6 +75,8 @@ a.cookie_jar << cookie1
 a.cookie_jar << cookie2
 
 a.get("https://www.ccc.tas.gov.au/planning-development/planning/advertised-planning-permit-applications/") do |page|
+  script = page.at("script").inner_text
+  puts script
   page.search('.doc-list a').each do |a|
     unless a.at('img')
       # Long winded name of PDF
