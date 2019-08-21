@@ -62,6 +62,29 @@ def scrape_pdf(url)
   end
 end
 
+def evaluate_expression(expression)
+  items = expression.split("+").map{|s| s.strip.gsub('"', "'")}
+  items.delete("''")
+  evaluated_items = items.map do |item|
+    if item =~ %r{^'([^']*)'$}
+      $1
+    elsif item =~ %r{'([^']*)'.slice\((\d+),(\d+)\)}
+      $1.slice($2.to_i, $3.to_i)
+    elsif item =~ %r{'([^']*)'.charAt\((\d+)\)}
+      $1[$2.to_i]
+    elsif item =~ %r{'([^']*)'.substr\((\d+),\s?(\d+)\)}
+      $1[$2.to_i..($2.to_i+$3.to_i-1)]
+    elsif item =~ %r{String.fromCharCode\((0x[0-9a-f]+)\)}
+      $1.to_i(16).chr
+    elsif item =~ %r{String.fromCharCode\((\d+)\)}
+      $1.to_i.chr
+    else
+      raise "Don't know how to handle: #{item}"
+    end
+  end
+  evaluated_items.join
+end
+
 a = Mechanize.new
 
 # Oh great. Thanks. This site is "protected" from scraping by a scheme that's just "work" to get around
@@ -74,12 +97,14 @@ a.get("https://www.ccc.tas.gov.au/planning-development/planning/advertised-plann
   raise "Unexpected form of script" unless script == "var s={},u,c,U,r,i,l=0,a,e=eval,w=String.fromCharCode,sucuri_cloudproxy_js='',S='#{s}';L=S.length;U=0;r='';var A='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';for(u=0;u<64;u++){s[A.charAt(u)]=u;}for(i=0;i<L;i++){c=s[S.charAt(i)];U=(U<<6)+c;l+=6;while(l>=8){((a=(U>>>(l-=8))&0xff)||(i<(L-2)))&&(r+=w(a));}}e(r);"
   # String is base64 encoded
   js_expr = Base64.decode64(s)
-  # p js_expr
-  s_expr = js_expr.match(%r{s=([^;]*);})[1]
-  d_expr = js_expr.match(%r{document.cookie=([^;]*);})[1]
+  s_expr = js_expr.match(/s=(.*);document\.cookie=(.*); location\.reload\(\);/m)[1]
+  d_expr = js_expr.match(/s=(.*);document\.cookie=(.*); location\.reload\(\);/m)[2]
 
-  puts "s_expr: #{s_expr}"
-  puts "d_expr: #{d_expr}"
+  s = evaluate_expression(s_expr)
+  d_expr = d_expr.gsub(" s ", " '#{s}' ")
+  d = evaluate_expression(d_expr)
+  # The final cookie
+  p d
   exit
 
   page.search('.doc-list a').each do |a|
