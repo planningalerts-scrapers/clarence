@@ -98,6 +98,7 @@ a.get(url) do |page|
   raise "Unexpected form of script" unless script == "var s={},u,c,U,r,i,l=0,a,e=eval,w=String.fromCharCode,sucuri_cloudproxy_js='',S='#{s}';L=S.length;U=0;r='';var A='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';for(u=0;u<64;u++){s[A.charAt(u)]=u;}for(i=0;i<L;i++){c=s[S.charAt(i)];U=(U<<6)+c;l+=6;while(l>=8){((a=(U>>>(l-=8))&0xff)||(i<(L-2)))&&(r+=w(a));}}e(r);"
   # String is base64 encoded
   js_expr = Base64.decode64(s)
+  puts "js_expr: #{js_expr}"
   s_expr = js_expr.match(/s=(.*);document\.cookie=(.*); location\.reload\(\);/m)[1]
   d_expr = js_expr.match(/s=(.*);document\.cookie=(.*); location\.reload\(\);/m)[2]
 
