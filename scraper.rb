@@ -2,6 +2,7 @@ require 'scraperwiki'
 require 'open-uri'
 require "pdf-reader"
 require 'mechanize'
+require "base64"
 
 class PageTextReceiver
   attr_accessor :content
@@ -67,16 +68,20 @@ a = Mechanize.new
 # Why do this? It's futile. It's extremely bad for accessibility
 # It's using https://sucuri.net/ which is owned by GoDaddy. So, basically super dodgy.
 
-# First, naive stab at this assumes that the cookies never have to change. So, hardcoding
-# two cookies that get set by the site that allow it to be loaded.
-cookie1 = Mechanize::Cookie.new domain: ".www.ccc.tas.gov.au", name: "sucuri_cloudproxy_uuid_7f1fb16fe", value: "2be47d328df84f3ed16371eef41e2e1c", path: "/"
-cookie2 = Mechanize::Cookie.new domain: ".www.ccc.tas.gov.au", name: "sucuri_cloudproxy_uuid_0755cafd7", value: "2250934b40bf9b8e6556017a3c643e31", path: "/"
-a.cookie_jar << cookie1
-a.cookie_jar << cookie2
-
 a.get("https://www.ccc.tas.gov.au/planning-development/planning/advertised-planning-permit-applications/") do |page|
   script = page.at("script").inner_text
-  puts script
+  s = script.match(%r{S='([^']*)';})[1]
+  raise "Unexpected form of script" unless script == "var s={},u,c,U,r,i,l=0,a,e=eval,w=String.fromCharCode,sucuri_cloudproxy_js='',S='#{s}';L=S.length;U=0;r='';var A='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';for(u=0;u<64;u++){s[A.charAt(u)]=u;}for(i=0;i<L;i++){c=s[S.charAt(i)];U=(U<<6)+c;l+=6;while(l>=8){((a=(U>>>(l-=8))&0xff)||(i<(L-2)))&&(r+=w(a));}}e(r);"
+  # String is base64 encoded
+  js_expr = Base64.decode64(s)
+  # p js_expr
+  s_expr = js_expr.match(%r{s=([^;]*);})[1]
+  d_expr = js_expr.match(%r{document.cookie=([^;]*);})[1]
+
+  puts "s_expr: #{s_expr}"
+  puts "d_expr: #{d_expr}"
+  exit
+
   page.search('.doc-list a').each do |a|
     unless a.at('img')
       # Long winded name of PDF
