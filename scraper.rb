@@ -12,7 +12,6 @@ a.get(url) do |page|
       s = name.split(' - ').map(&:strip)
       # Skip over links that we don't know how to handle
       if s.count != 4
-        p s
         puts "Unexpected form of PDF name. So, skipping: #{name}"
         next
       end
