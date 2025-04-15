@@ -26,15 +26,25 @@ a.get(url) do |page|
     end
 
     puts "Found: #{s.inspect}"
-    record = {
-      'council_reference' => s[0],
-      'address' => s[1] + ", TAS",
-      'description' => s[2],
-      'on_notice_to' => Date.parse(s[3]).to_s,
-      'date_scraped' => Date.today.to_s,
-      'info_url' => pdf_link['href']
-    }
+    begin
+      on_notice_to = begin
+                       Date.parse(s[3].sub('Advertising period expires ', ''))
+                     rescue ArgumentError
+                       nil
+                     end
+      description = "#{s[2]}#{on_notice_to ? '' : "; #{s[3]}"}"
+      record = {
+        'council_reference' => s[0],
+        'address' => s[1] + ", TAS",
+        'description' => description,
+        'on_notice_to' => on_notice_to.to_s,
+        'date_scraped' => Date.today.to_s,
+        'info_url' => pdf_link['href']
+      }
 
-    ScraperWiki.save_sqlite(['council_reference'], record)
+      ScraperWiki.save_sqlite(['council_reference'], record)
+    rescue => e
+      puts "  Ignored erroneous record: #{e.class.name}: #{e.message}"
+    end
   end
 end
