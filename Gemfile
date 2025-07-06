@@ -8,6 +8,7 @@ gem "nokogiri", "~> 1.15.0"
 gem "sqlite3", "~> 1.6.3"
 
 # Development and Test
+gem "rubocop"
 # gem "rake", "~> 12.3"
 # gem "rspec", "~> 3.0"
 # gem "simplecov", "~> 0.18.0"
