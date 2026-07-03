@@ -27,6 +27,7 @@ class Scraper
             .split("#{EN_DASH} ")
             .map(&:strip)
 
+        # try increasingly degraded patterns to match ...
         if s.count == 3
           puts "Found 3 parts as expected: #{s.inspect}"
           reference = s[0]
@@ -42,9 +43,19 @@ class Scraper
           address = ::Regexp.last_match(2)
           description = ::Regexp.last_match(3)
           puts "Found reference #{reference.inspect}, address #{address.inspect} and description: #{description.inspect} [pattern #2]"
+        elsif s.count == 2 && name =~ %r{\A(\S+-\d\d\d\d[\s/]\d+)-?\s+(\S.{8,})#{EN_DASH}\s*(.*?)\z}
+          reference = ::Regexp.last_match(1)
+          address = ::Regexp.last_match(2)
+          description = ::Regexp.last_match(3)
+          puts "Found reference #{reference.inspect}, address #{address.inspect} and description: #{description.inspect} [pattern #3]"
+        elsif s.count == 2 && name =~ %r{\A(\S+-\d\d\d\d[\s/]\d+)\s*[-#{EN_DASH}]\s*([^-#{EN_DASH}]{15,})\s*[-#{EN_DASH}]\s*(.*?)\z}
+          reference = ::Regexp.last_match(1)
+          address = ::Regexp.last_match(2)
+          description = ::Regexp.last_match(3)
+          puts "Found reference #{reference.inspect}, address #{address.inspect} and description: #{description.inspect} [pattern #4]"
         else
           # Skip over unrecognized formats
-          puts "WARNING: Skipping unparsable map link: #{name.inspect}"
+          puts "WARNING: Skipping unparsable map link with #{s.count} parts: #{name.inspect}"
           skipped += 1
           next
         end
