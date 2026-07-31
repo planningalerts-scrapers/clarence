@@ -81,12 +81,12 @@ GEM
     ruby-progressbar (1.13.0)
     rubyntlm (0.6.5)
       base64
-    sqlite3 (1.6.9-aarch64-linux)
-    sqlite3 (1.6.9-arm-linux)
-    sqlite3 (1.6.9-arm64-darwin)
-    sqlite3 (1.6.9-x86-linux)
-    sqlite3 (1.6.9-x86_64-darwin)
-    sqlite3 (1.6.9-x86_64-linux)
+    sqlite3 (2.9.5-aarch64-linux-gnu)
+    sqlite3 (2.9.5-arm-linux-gnu)
+    sqlite3 (2.9.5-arm64-darwin)
+    sqlite3 (2.9.5-x86-linux-gnu)
+    sqlite3 (2.9.5-x86_64-darwin)
+    sqlite3 (2.9.5-x86_64-linux-gnu)
     sqlite_magic (0.0.6)
       sqlite3
     unicode-display_width (3.2.0)
@@ -108,7 +108,7 @@ DEPENDENCIES
   nokogiri (~> 1.15.0)
   rubocop
   scraperwiki!
-  sqlite3 (~> 1.6.3)
+  sqlite3 (~> 2.9.5)
 
 RUBY VERSION
    ruby 3.2.2p53
